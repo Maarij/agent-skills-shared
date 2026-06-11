@@ -1,6 +1,6 @@
 # PRD Workflow Starter
 
-A portable copy of the planning/tracking system used in argetlahm. Drop this into a new project to get the same structure: short task-sized PRDs with a lifecycle, ADRs for direction-level decisions, a domain glossary, and a single-source-of-truth documentation convention.
+A portable copy of a planning/tracking system. Drop this into a new project to get the same structure: short task-sized PRDs with a lifecycle, ADRs for direction-level decisions, a domain glossary, and a single-source-of-truth documentation convention.
 
 ## How to install in a new project
 
