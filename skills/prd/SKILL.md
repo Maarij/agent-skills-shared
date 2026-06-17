@@ -1,3 +1,8 @@
+---
+name: prd
+description: Draft a concise Product Requirements Document for a feature request and save it under docs/prds without starting implementation. Use when the user invokes /prd or asks to write a PRD.
+---
+
 If $ARGUMENTS is empty, ask the user to describe the feature they want to build before proceeding.
 
 Before writing the PRD, ask clarifying questions in rounds — up to 2 rounds total, stopping as soon as you have enough to write a concrete PRD. Each round should ask only what genuinely blocks you from proceeding. Skip questions already answered by $ARGUMENTS.
