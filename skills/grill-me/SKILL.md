@@ -8,5 +8,3 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 Ask the questions one at a time.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
-
-Reference Link: https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md

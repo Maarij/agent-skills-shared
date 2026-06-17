@@ -1,7 +1,0 @@
-If $ARGUMENTS is empty, ask the user what to implement before proceeding.
-
-Do not commit/push until the user confirms they have reviewed and are satisfied. Always ask for confirmation before committing/pushing code.
-
-Before implementation, check to see if mock-ups already exists. If so, use as reference. If not, create mock-up under 'designs/prd##' as static html/css. If there are decisions between two options, make sure both mock ups are shown for both options. Wait for approval of mock-up before continuing.
-
-When implementing new feature or fixing bug, always write tests to ensure that code works as expected. Consider a TDD approach to begin with if applicable.

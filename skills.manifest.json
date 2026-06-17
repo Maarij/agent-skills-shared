@@ -1,0 +1,22 @@
+{
+  "skills": [
+    { "name": "caveman" },
+    { "name": "design-an-interface" },
+    { "name": "diagnose" },
+    { "name": "find-skills" },
+    { "name": "grill-me" },
+    { "name": "grill-with-docs" },
+    { "name": "handoff" },
+    { "name": "implement" },
+    { "name": "improve-codebase-architecture" },
+    { "name": "prd" },
+    { "name": "prototype" },
+    { "name": "setup-matt-pocock-skills" },
+    { "name": "tdd" },
+    { "name": "to-issues" },
+    { "name": "to-prd" },
+    { "name": "triage" },
+    { "name": "write-a-skill" },
+    { "name": "zoom-out" }
+  ]
+}
