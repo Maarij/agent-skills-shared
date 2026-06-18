@@ -12,7 +12,9 @@ A portable copy of a planning/tracking system. Drop this into a new project to g
    └── docs/
        ├── prds/
        │   ├── README.md          ← the index — the heart of the system
-       │   └── TEMPLATE.md        ← PRD skeleton to copy when authoring
+       │   ├── TEMPLATE.md        ← PRD skeleton to copy when authoring
+       │   ├── planned/  deferred/  cancelled/  shipped/   ← each with bug/ feature/ research/ techdebt/
+       │   └── reference/         ← non-PRD planning notes (no type subfolders)
        ├── adr/
        │   ├── README.md
        │   └── TEMPLATE.md
@@ -22,7 +24,7 @@ A portable copy of a planning/tracking system. Drop this into a new project to g
 
 2. Merge `CLAUDE.md.snippet.md` into the new project's `CLAUDE.md` (adapt the bracketed parts).
 3. Delete this file and `CLAUDE.md.snippet.md` from the copy — they're install instructions, not project docs.
-4. The status folders (`planned/feature/` etc.) are created lazily when the first PRD of that type/status lands — don't pre-create empty directories.
+4. The full status/type folder skeleton (`planned/feature/`, `shipped/bug/`, …) ships with the starter, so copying `docs/` brings every lifecycle folder along — they exist from day one, no manual `mkdir` step. Each empty leaf carries a `.gitkeep` placeholder so git tracks the otherwise-empty directory; remove a folder's `.gitkeep` once it gets its first real PRD, or leave it (harmless). Prune any status/type folders your project will never use if you prefer a leaner tree.
 
 The skills that drive the workflow (`/prd`, `/grill-me`, `/grill-with-docs`, `/implement`, `/tdd`) are user-level — they're already available in every project. This kit gives them the file structure they expect.
 

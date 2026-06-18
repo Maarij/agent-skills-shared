@@ -17,14 +17,14 @@ Every PRD carries a `> **Type:** …` tag near the top, also reflected in its fo
 docs/prds/
 ├── README.md
 ├── TEMPLATE.md
-├── planned/
-│   ├── bug/  feature/  research/  techdebt/   (created lazily)
-├── deferred/                                   (created lazily)
-├── cancelled/                                  (created lazily)
-├── reference/    (non-PRD planning notes, e.g. sequencing questions)
-└── shipped/
-    ├── bug/  feature/  research/  techdebt/
+├── planned/     bug/  feature/  research/  techdebt/
+├── deferred/    bug/  feature/  research/  techdebt/
+├── cancelled/   bug/  feature/  research/  techdebt/
+├── shipped/     bug/  feature/  research/  techdebt/
+└── reference/   (non-PRD planning notes, e.g. sequencing questions — no type subfolders)
 ```
+
+The full status/type skeleton ships with the starter, so every lifecycle folder exists from day one. Each empty leaf holds a `.gitkeep` placeholder (git won't track an empty directory otherwise); drop it once the folder gets its first real PRD, or leave it — it's harmless.
 
 ## Planned (0)
 
