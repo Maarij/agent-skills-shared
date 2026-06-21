@@ -15,6 +15,23 @@ Links every skill listed in skills.manifest.json into:
 EOF
 }
 
+detect_os() {
+  local uname_s="${1:-$(uname -s)}"
+  local proc_version="${2:-}"
+  case "$uname_s" in
+    Darwin) echo "darwin" ;;
+    Linux)
+      if printf '%s' "$proc_version" | grep -qi microsoft; then
+        echo "wsl"
+      else
+        echo "linux"
+      fi
+      ;;
+    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
+    *) echo "unknown" ;;
+  esac
+}
+
 main() {
   print_usage
 }

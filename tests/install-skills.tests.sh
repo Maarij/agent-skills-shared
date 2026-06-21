@@ -74,6 +74,17 @@ test_script_sources_and_usage() {
   assert_contains "$out" "--force" "print_usage documents --force"
 }
 
+test_detect_os() {
+  assert_eq "darwin"  "$(detect_os "Darwin" "")"               "Darwin -> darwin"
+  assert_eq "linux"   "$(detect_os "Linux" "some kernel build")" "plain Linux -> linux"
+  assert_eq "windows" "$(detect_os "MINGW64_NT-10.0-26200" "")" "MINGW -> windows"
+  assert_eq "windows" "$(detect_os "MSYS_NT-10.0" "")"          "MSYS -> windows"
+  assert_eq "windows" "$(detect_os "CYGWIN_NT-10.0" "")"        "CYGWIN -> windows"
+  assert_eq "wsl"     "$(detect_os "Linux" "Linux ... Microsoft ... WSL2")" "Linux + microsoft -> wsl"
+  assert_eq "wsl"     "$(detect_os "Linux" "...microsoft-standard-WSL2...")" "lowercase microsoft -> wsl"
+  assert_eq "unknown" "$(detect_os "SunOS" "")"                "unrecognized -> unknown"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"
