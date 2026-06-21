@@ -79,6 +79,49 @@ link_command_string() {
   esac
 }
 
+make_link() {
+  local os="$1" src="$2" dest="$3"
+  case "$os" in
+    darwin|linux)
+      ln -s "$src" "$dest"
+      ;;
+    windows)
+      local win_src win_dest
+      win_src="$(to_windows_path "$src")"
+      win_dest="$(to_windows_path "$dest")"
+      if ! powershell.exe -NoProfile -Command \
+        "New-Item -ItemType SymbolicLink -Path '$win_dest' -Target '$win_src' | Out-Null"; then
+        echo "ERROR: failed to create symlink at $dest." >&2
+        echo "On Windows, enable Developer Mode (Settings > For developers) or run from an" >&2
+        echo "elevated shell, then re-run. The installer never falls back to copying." >&2
+        return 1
+      fi
+      ;;
+    *)
+      echo "ERROR: unsupported OS for linking: $os" >&2
+      return 1
+      ;;
+  esac
+}
+
+is_link_to() {
+  local os="$1" dest="$2" src="$3"
+  case "$os" in
+    windows)
+      [[ -e "$dest" || -L "$dest" ]] || return 1
+      local cur win_src
+      cur="$(powershell.exe -NoProfile -Command \
+        "(Get-Item -LiteralPath '$(to_windows_path "$dest")' -Force).Target" 2>/dev/null | tr -d '\r')"
+      win_src="$(to_windows_path "$src")"
+      [[ "$cur" == "$win_src" ]]
+      ;;
+    *)
+      [[ -L "$dest" ]] || return 1
+      [[ "$(readlink "$dest")" == "$src" ]]
+      ;;
+  esac
+}
+
 main() {
   print_usage
 }

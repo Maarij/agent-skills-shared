@@ -166,6 +166,40 @@ test_link_command_string_windows() {
   assert_contains "$out" "-Target '$win_src'" "link target is the cygpath-converted src"
 }
 
+test_make_link_and_is_link_to_unix() {
+  if [[ "$(host_os)" == "windows" ]]; then
+    skip "real symlink creation uses powershell on windows; verified manually (Task 10)"
+    return
+  fi
+  local sb src dest
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/src"
+  src="$sb/src"
+  dest="$sb/link"
+
+  make_link "$(host_os)" "$src" "$dest"
+  assert_eq "0" "$?" "make_link succeeds on unix"
+  assert_eq "$src" "$(readlink "$dest")" "link target is src"
+
+  is_link_to "$(host_os)" "$dest" "$src"
+  assert_eq "0" "$?" "is_link_to true for a matching link"
+
+  is_link_to "$(host_os)" "$dest" "$sb/other"
+  assert_eq "1" "$?" "is_link_to false for a non-matching target"
+
+  is_link_to "$(host_os)" "$sb/missing" "$src"
+  assert_eq "1" "$?" "is_link_to false when dest is absent"
+}
+
+test_is_link_to_plain_dir_is_false() {
+  # A real directory is not a managed link, on every OS.
+  local sb
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/realdir"
+  is_link_to "$(host_os)" "$sb/realdir" "$sb/src"
+  assert_eq "1" "$?" "is_link_to false for a plain directory"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"
