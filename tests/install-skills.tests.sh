@@ -350,6 +350,21 @@ test_main_real_full_run_unix() {
     "claude link points at the shared link"
 }
 
+test_main_empty_manifest_fails() {
+  local sb repo out rc
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/scripts" "$sb/home"
+  cp "$SCRIPT" "$sb/repo/scripts/install-skills.sh"
+  cat > "$sb/repo/skills.manifest.json" <<'EOF'
+{ "skills": [] }
+EOF
+  repo="$sb/repo"
+  out="$(HOME="$sb/home" bash "$repo/scripts/install-skills.sh" --dry-run 2>&1)"
+  rc=$?
+  assert_eq "1" "$rc" "empty manifest exits non-zero"
+  assert_contains "$out" "no managed skills found" "empty manifest prints no managed skills found"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"

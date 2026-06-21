@@ -212,6 +212,10 @@ main() {
   claude_root="$HOME/.claude/skills"
 
   names="$(read_manifest_skills "$manifest")" || return 1
+  if [[ -z "$names" ]]; then
+    echo "ERROR: no managed skills found in $manifest" >&2
+    return 1
+  fi
 
   echo "== Pass 1: shared/Codex layer ($agents_root) =="
   while IFS= read -r name; do
