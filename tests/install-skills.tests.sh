@@ -283,6 +283,73 @@ test_ensure_link_force_backup_real_unix() {
   assert_eq "1" "$backup_count" "exactly one backup directory was created"
 }
 
+# _make_repo <sandbox> -> builds a sandbox repo with the script, a 1-skill manifest,
+# and the skill source; echoes the repo path.
+_make_repo() {
+  local sb="$1"
+  mkdir -p "$sb/repo/scripts" "$sb/repo/skills/sample" "$sb/home"
+  cp "$SCRIPT" "$sb/repo/scripts/install-skills.sh"
+  cat > "$sb/repo/skills.manifest.json" <<'EOF'
+{ "skills": [ { "name": "sample" } ] }
+EOF
+  cat > "$sb/repo/skills/sample/SKILL.md" <<'EOF'
+---
+name: sample
+description: Test skill
+---
+Sample.
+EOF
+  printf '%s' "$sb/repo"
+}
+
+test_main_help() {
+  local out rc
+  out="$(HOME="$TMPROOT/ignored" bash "$SCRIPT" --help)"
+  rc=$?
+  assert_eq "0" "$rc" "--help exits 0"
+  assert_contains "$out" "Usage: install-skills.sh" "--help prints usage"
+}
+
+test_main_unknown_arg() {
+  local rc
+  HOME="$TMPROOT/ignored" bash "$SCRIPT" --bogus >/dev/null 2>&1
+  rc=$?
+  assert_eq "2" "$rc" "unknown arg exits 2"
+}
+
+test_main_dryrun_both_passes() {
+  local sb repo out
+  sb="$(new_sandbox)"
+  repo="$(_make_repo "$sb")"
+  out="$(HOME="$sb/home" bash "$repo/scripts/install-skills.sh" --dry-run)"
+  assert_contains "$out" "Pass 1" "announces pass 1"
+  assert_contains "$out" "Pass 2" "announces pass 2"
+  assert_contains "$out" "Would link sample -> $repo/skills/sample" "pass 1 links sample from the repo"
+  assert_contains "$out" "$sb/home/.agents/skills/sample (source created by an earlier pass)" \
+    "pass 2 tolerates the not-yet-created shared link"
+  # dry-run must not touch the filesystem
+  if [[ -e "$sb/home/.agents/skills/sample" || -e "$sb/home/.claude/skills/sample" ]]; then
+    FAIL=$((FAIL + 1)); echo "FAIL: dry-run created filesystem entries"
+  else
+    PASS=$((PASS + 1))
+  fi
+}
+
+test_main_real_full_run_unix() {
+  if [[ "$(host_os)" == "windows" ]]; then
+    skip "real full run verified manually on windows (Task 10)"
+    return
+  fi
+  local sb repo
+  sb="$(new_sandbox)"
+  repo="$(_make_repo "$sb")"
+  HOME="$sb/home" bash "$repo/scripts/install-skills.sh" >/dev/null
+  assert_eq "$repo/skills/sample" "$(readlink "$sb/home/.agents/skills/sample")" \
+    "shared link points at the repo skill"
+  assert_eq "$sb/home/.agents/skills/sample" "$(readlink "$sb/home/.claude/skills/sample")" \
+    "claude link points at the shared link"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"

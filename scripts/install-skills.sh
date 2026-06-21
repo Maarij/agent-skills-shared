@@ -176,7 +176,56 @@ ensure_link() {
 }
 
 main() {
-  print_usage
+  set -uo pipefail
+
+  DRY_RUN=0
+  FORCE=0
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      --dry-run) DRY_RUN=1 ;;
+      --force)   FORCE=1 ;;
+      -h|--help) print_usage; return 0 ;;
+      *) echo "Unknown argument: $arg" >&2; print_usage >&2; return 2 ;;
+    esac
+  done
+
+  local proc_version
+  proc_version="$(cat /proc/version 2>/dev/null || true)"
+  OS="$(detect_os "$(uname -s)" "$proc_version")"
+
+  if [[ "$OS" == "wsl" ]]; then
+    echo "ERROR: Detected WSL. Run this from Git Bash or PowerShell on Windows, not WSL." >&2
+    echo "Links created from WSL under /mnt/c are not reliably followed by Windows-native apps." >&2
+    return 1
+  fi
+  if [[ "$OS" == "unknown" ]]; then
+    echo "ERROR: Unsupported OS (uname -s: $(uname -s))." >&2
+    return 1
+  fi
+
+  local script_dir repo_root manifest agents_root claude_root names
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/.." && pwd)"
+  manifest="$repo_root/skills.manifest.json"
+  agents_root="$HOME/.agents/skills"
+  claude_root="$HOME/.claude/skills"
+
+  names="$(read_manifest_skills "$manifest")" || return 1
+
+  echo "== Pass 1: shared/Codex layer ($agents_root) =="
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    ensure_link "$name" "$repo_root/skills/$name" "$agents_root/$name" || return 1
+  done <<< "$names"
+
+  echo "== Pass 2: Claude layer ($claude_root) =="
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    ensure_link "$name" "$agents_root/$name" "$claude_root/$name" || return 1
+  done <<< "$names"
+
+  echo "Done."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
