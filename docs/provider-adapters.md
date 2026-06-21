@@ -13,7 +13,7 @@ Edit reusable skills here.
 ## Codex/shared runtime
 
 ```text
-C:\Users\maarij\.agents\skills\<skill-name>
+~\.agents\skills\<skill-name>
 ```
 
 Installed as a junction to the canonical source.
@@ -21,7 +21,7 @@ Installed as a junction to the canonical source.
 ## Claude runtime
 
 ```text
-C:\Users\maarij\.claude\skills\<skill-name>
+~\.claude\skills\<skill-name>
 ```
 
 Installed as a junction to the Codex/shared runtime path. This preserves Claude skill-name invocation such as `/prd {text}` while keeping one canonical skill source.

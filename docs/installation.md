@@ -23,7 +23,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-codex-skil
 This creates junctions:
 
 ```text
-C:\Users\maarij\.agents\skills\<skill-name>
+~\.agents\skills\<skill-name>
   -> C:\Git\agent-skills-shared\skills\<skill-name>
 ```
 
@@ -44,8 +44,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-claude-ski
 This creates junctions:
 
 ```text
-C:\Users\maarij\.claude\skills\<skill-name>
-  -> C:\Users\maarij\.agents\skills\<skill-name>
+~\.claude\skills\<skill-name>
+  -> ~\.agents\skills\<skill-name>
 ```
 
 Run the Codex/shared install first. The Claude installer expects the shared runtime entries to exist.
@@ -57,7 +57,7 @@ If an existing managed skill is a real directory instead of a junction, the inst
 With `-Force`, the installer moves the existing directory to a timestamped backup beside it, then creates the junction. Example:
 
 ```text
-C:\Users\maarij\.claude\skills\prd.backup.20260617143000
+~\.claude\skills\prd.backup.20260617143000
 ```
 
 Review dry-run output before using `-Force`.
@@ -69,8 +69,8 @@ After installing, restart the CLI that should discover the skills.
 Useful checks:
 
 ```powershell
-Get-Item C:\Users\maarij\.agents\skills\prd | Select-Object LinkType,Target
-Get-Item C:\Users\maarij\.claude\skills\prd | Select-Object LinkType,Target
+Get-Item ~\.agents\skills\prd | Select-Object LinkType,Target
+Get-Item ~\.claude\skills\prd | Select-Object LinkType,Target
 ```
 
-Claude slash-style invocation such as `/prd {text}` depends on the skill directory name under `C:\Users\maarij\.claude\skills`. The Claude installer preserves that by creating a `prd` junction at that path.
+Claude slash-style invocation such as `/prd {text}` depends on the skill directory name under `~\.claude\skills`. The Claude installer preserves that by creating a `prd` junction at that path.
