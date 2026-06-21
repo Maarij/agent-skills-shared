@@ -48,23 +48,3 @@ optional but recommended. macOS/Linux need only `bash`.
 
 After installing, restart the CLI that should discover the skills. See
 [docs/installation.md](docs/installation.md) for the full flow and verification steps.
-
-## Upgrading from the PowerShell installers
-
-The Windows-only `install-codex-skills.ps1` and `install-claude-skills.ps1` have been
-replaced by the single cross-platform `scripts/install-skills.sh` (Windows via Git
-Bash, macOS, and Linux).
-
-- **Your existing install keeps working.** The new script is idempotent: it recognizes
-  any link already pointing at the right target — including the junctions the old
-  PowerShell scripts created — and reports it as `Already linked` without touching it.
-  Run `./scripts/install-skills.sh --dry-run` to confirm.
-- **Re-run the new script** whenever you add, remove, or rename a managed skill — the
-  same cases that needed a re-run before.
-- **Optional — standardize on symlinks.** Junctions and symlinks both resolve correctly,
-  so this is purely cosmetic. Note that `--force` alone will **not** convert them: the
-  installer sees a correctly-pointing junction as `Already linked` and skips it before
-  the `--force` path. To switch a skill to a symlink, remove its junction first (in both
-  `~/.agents/skills/<name>` and `~/.claude/skills/<name>`), then re-run the installer to
-  recreate it as a symlink. On Windows the installer creates symlinks with `mklink`,
-  which needs only Developer Mode — no elevation.
