@@ -70,8 +70,7 @@ link_command_string() {
       local win_src win_dest
       win_src="$(to_windows_path "$src")"
       win_dest="$(to_windows_path "$dest")"
-      printf "powershell.exe -NoProfile -Command \"New-Item -ItemType SymbolicLink -Path '%s' -Target '%s'\"" \
-        "$win_dest" "$win_src"
+      printf 'cmd.exe /c mklink /D "%s" "%s"' "$win_dest" "$win_src"
       ;;
     *)
       printf 'ERROR: unsupported OS for linking: %s' "$os"
@@ -89,8 +88,12 @@ make_link() {
       local win_src win_dest
       win_src="$(to_windows_path "$src")"
       win_dest="$(to_windows_path "$dest")"
-      if ! powershell.exe -NoProfile -Command \
-        "New-Item -ItemType SymbolicLink -Path '$win_dest' -Target '$win_src' | Out-Null"; then
+      # Create the symlink with cmd's mklink, not PowerShell's New-Item: Windows
+      # PowerShell 5.1 ignores the unprivileged-create flag and demands elevation even
+      # under Developer Mode, while mklink honors Developer Mode and needs no admin. It
+      # also still works when elevated, so it covers every case 5.1 did and more.
+      # MSYS2_ARG_CONV_EXCL stops Git Bash from rewriting the /c and /D switches as paths.
+      if ! MSYS2_ARG_CONV_EXCL='*' cmd.exe /c mklink /D "$win_dest" "$win_src" >/dev/null; then
         echo "ERROR: failed to create symlink at $dest." >&2
         echo "On Windows, enable Developer Mode (Settings > For developers) or run from an" >&2
         echo "elevated shell, then re-run. The installer never falls back to copying." >&2

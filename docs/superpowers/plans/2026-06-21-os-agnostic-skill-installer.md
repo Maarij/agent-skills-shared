@@ -1,5 +1,7 @@
 # OS-agnostic Skill Installer Implementation Plan
 
+> **Status: Shipped (2026-06-21)** on branch `os-agnostic-installer`. One deviation from the snippets below: the Windows link primitive ships as `cmd /c mklink /D`, not the `powershell.exe New-Item -ItemType SymbolicLink` shown in Tasks 4–5 — Windows PowerShell 5.1 demands elevation even under Developer Mode, while `mklink` honors Developer Mode unprivileged. See the [design spec](../specs/2026-06-21-os-agnostic-skill-install-design.md). The task snippets are kept verbatim as the historical TDD record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the two Windows-only PowerShell installers with a single `scripts/install-skills.sh` that installs the managed skills on Windows (Git Bash), macOS, and Linux for any user, with no machine- or user-specific values baked in.

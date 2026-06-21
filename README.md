@@ -42,8 +42,9 @@ before replacing it.
 
 **Prerequisites:** On Windows, run from **Git Bash** (provides `bash`, `cygpath`, and
 the bundled `powershell.exe`) with **Developer Mode** enabled (Settings → For
-developers) so symlinks can be created; do **not** run from WSL. `jq` is optional but
-recommended. macOS/Linux need only `bash`.
+developers) so symlinks can be created. The installer links with `mklink`, so Developer
+Mode is enough — no admin/elevated shell required. Do **not** run from WSL. `jq` is
+optional but recommended. macOS/Linux need only `bash`.
 
 After installing, restart the CLI that should discover the skills. See
 [docs/installation.md](docs/installation.md) for the full flow and verification steps.
@@ -60,7 +61,10 @@ Bash, macOS, and Linux).
   Run `./scripts/install-skills.sh --dry-run` to confirm.
 - **Re-run the new script** whenever you add, remove, or rename a managed skill — the
   same cases that needed a re-run before.
-- **Optional — standardize on symlinks.** To convert old junctions to the symlinks the
-  installer now creates everywhere, enable Developer Mode and re-run with `--force` (it
-  backs up each existing entry to `<dest>.backup.<timestamp>` first). Junctions and
-  symlinks both resolve correctly, so this is purely cosmetic.
+- **Optional — standardize on symlinks.** Junctions and symlinks both resolve correctly,
+  so this is purely cosmetic. Note that `--force` alone will **not** convert them: the
+  installer sees a correctly-pointing junction as `Already linked` and skips it before
+  the `--force` path. To switch a skill to a symlink, remove its junction first (in both
+  `~/.agents/skills/<name>` and `~/.claude/skills/<name>`), then re-run the installer to
+  recreate it as a symlink. On Windows the installer creates symlinks with `mklink`,
+  which needs only Developer Mode — no elevation.

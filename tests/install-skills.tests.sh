@@ -160,15 +160,15 @@ test_link_command_string_windows() {
   win_src="$(to_windows_path "$src")"
   win_dest="$(to_windows_path "$dest")"
   out="$(link_command_string "windows" "$src" "$dest")"
-  assert_contains "$out" "powershell.exe -NoProfile -Command" "uses powershell.exe -NoProfile"
-  assert_contains "$out" "New-Item -ItemType SymbolicLink" "creates a SymbolicLink"
-  assert_contains "$out" "-Path '$win_dest'" "target path is the cygpath-converted dest"
-  assert_contains "$out" "-Target '$win_src'" "link target is the cygpath-converted src"
+  assert_contains "$out" "cmd.exe /c mklink /D" "uses cmd mklink (works unprivileged under Developer Mode)"
+  assert_not_contains "$out" "New-Item -ItemType SymbolicLink" "does not use PowerShell 5.1 New-Item"
+  assert_contains "$out" "\"$win_dest\"" "link path is the cygpath-converted dest"
+  assert_contains "$out" "\"$win_src\"" "link target is the cygpath-converted src"
 }
 
 test_make_link_and_is_link_to_unix() {
   if [[ "$(host_os)" == "windows" ]]; then
-    skip "real symlink creation uses powershell on windows; verified manually (Task 10)"
+    skip "real symlink creation uses cmd mklink on windows; verified manually"
     return
   fi
   local sb src dest

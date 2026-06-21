@@ -1,7 +1,7 @@
 # OS-agnostic skill installer — design
 
 Date: 2026-06-21
-Status: Approved (pending implementation plan)
+Status: Shipped (2026-06-21)
 
 ## Problem
 
@@ -39,8 +39,8 @@ adding/removing/renaming a skill requires re-running the installer.
 |---|----------|-----------|
 | 1 | Target Windows + macOS + Linux | macOS and Linux share the Unix linking path, so all three is barely more than Mac-only. |
 | 2 | Symlinks on every OS (not junctions) | Uniform behavior; preserves "edit = instantly live". Accepts that Windows needs Developer Mode / elevation. |
-| 3 | Single `scripts/install-skills.sh` (bash), shelling out to PowerShell on Windows only for the link line | One codebase; bash can't reliably create native NTFS symlinks, so the link line delegates to Windows-native tooling. |
-| 4 | Retire the two `.ps1` scripts | The bash script subsumes both; the inline PowerShell call needs only one command, not the full old scripts. |
+| 3 | Single `scripts/install-skills.sh` (bash); on Windows the link line shells out to `cmd /c mklink /D` | One codebase; bash can't reliably create native NTFS symlinks, so the link line delegates to Windows-native tooling. Shipped with `cmd`'s `mklink`, not PowerShell `New-Item`: Windows PowerShell 5.1 demands elevation even under Developer Mode, whereas `mklink` honors Developer Mode unprivileged. |
+| 4 | Retire the two `.ps1` scripts | The bash script subsumes both; the inline link command needs only one line, not the full old scripts. |
 | 5 | Parse the manifest with `jq`, fall back to `grep`/`sed` with a warning if `jq` is absent | Clean when `jq` is present; no hard dependency. |
 | 6 | Hard-stop when run inside WSL | In WSL `uname` reports `Linux`, so the script would wrongly `ln -s` on `/mnt/c/...` and may produce a link Windows does not follow. Safer to refuse with guidance. |
 | 7 | No hardcoded user or machine paths anywhere | Portability requirement. Script uses `$HOME` and paths relative to its own location; docs use `~` / `<repo>` placeholders. |
@@ -82,14 +82,15 @@ Branch on `uname -s`:
 
 - `Darwin` / `Linux` (genuine) → `ln -s "$src" "$dest"`.
 - `MINGW*` / `MSYS*` / `CYGWIN*` (Git Bash on Windows) → convert paths with
-  `cygpath -w`, then:
-  `powershell.exe -NoProfile -Command "New-Item -ItemType SymbolicLink -Path '<win_dest>' -Target '<win_src>'"`.
+  `cygpath -w`, then: `cmd.exe /c mklink /D "<win_dest>" "<win_src>"`.
+  (`cmd`'s `mklink`, not PowerShell `New-Item`: PowerShell 5.1 demands elevation even
+  under Developer Mode, while `mklink` works unprivileged with Developer Mode on.)
 
 WSL is detected separately (see below) and stops before this branch.
 
 ### Windows path translation
 
-Inside Git Bash, `$HOME` is a POSIX path (e.g. `/c/Users/<user>`), but PowerShell
+Inside Git Bash, `$HOME` is a POSIX path (e.g. `/c/Users/<user>`), but `cmd`/`mklink`
 needs a Windows path (e.g. `C:\Users\<user>`). Before each Windows shell-out, convert
 both source and destination with `cygpath -w`. `cygpath` ships with Git Bash, so this
 adds no dependency. This conversion is the most error-prone step and must be covered
@@ -102,8 +103,8 @@ by the dry-run output.
 
 ## Windows guards (fail loudly)
 
-- **Missing symlink privilege:** if the PowerShell `New-Item` call fails (Developer
-  Mode off and not elevated), catch the failure and print: enable Developer Mode
+- **Missing symlink privilege:** if the `mklink` call fails (Developer Mode off and
+  not elevated), catch the failure and print: enable Developer Mode
   (Settings → For developers) or run from an elevated shell, then re-run. Never fall
   back to a silent copy.
 - **WSL:** detect via `microsoft` in `/proc/version`. If detected, stop and instruct
@@ -132,7 +133,7 @@ No single machine has all three OSes, so:
 
 1. `shellcheck scripts/install-skills.sh` for portability and quoting bugs.
 2. `--dry-run` on Windows (Git Bash): confirm the `cygpath`-converted paths and the
-   PowerShell command string are correct.
+   `mklink` command string are correct.
 3. Real run on Windows: verify the chain resolves
    (`Get-Item ~/.claude/skills/<name> | Select LinkType,Target`).
 4. Same dry-run-then-verify on macOS/Linux when available

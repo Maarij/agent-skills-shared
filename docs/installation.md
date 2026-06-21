@@ -7,7 +7,10 @@ Run from the repository root (referred to below as `<repo>`).
 - **macOS / Linux:** `bash`. `jq` optional (recommended).
 - **Windows:** **Git Bash** (provides `bash`, `cygpath`, and the bundled
   `powershell.exe`) and **Developer Mode** enabled (Settings → For developers) so
-  symlinks can be created. Do **not** run from WSL — links made under `/mnt/c` are not
+  symlinks can be created. The installer creates links with `cmd`'s `mklink`, which
+  honors Developer Mode and needs **no elevation** — a normal Git Bash shell is enough.
+  (PowerShell 5.1's `New-Item -ItemType SymbolicLink` is avoided because it demands admin
+  even under Developer Mode.) Do **not** run from WSL — links made under `/mnt/c` are not
   reliably followed by Windows-native apps, and the installer hard-stops if it detects
   WSL.
 
