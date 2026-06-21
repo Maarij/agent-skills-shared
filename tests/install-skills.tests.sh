@@ -130,6 +130,7 @@ test_read_manifest_skills_happy() {
   manifest="$(_write_manifest "$sb")"
   out="$(read_manifest_skills "$manifest" 2>/dev/null)"
   assert_contains "$out" "caveman" "read_manifest_skills returns caveman"
+  assert_contains "$out" "design-an-interface" "read_manifest_skills returns design-an-interface"
   assert_contains "$out" "tdd" "read_manifest_skills returns tdd"
 }
 
