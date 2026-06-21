@@ -56,6 +56,29 @@ read_manifest_skills() {
   fi
 }
 
+to_windows_path() {
+  cygpath -w "$1"
+}
+
+link_command_string() {
+  local os="$1" src="$2" dest="$3"
+  case "$os" in
+    darwin|linux)
+      printf 'ln -s "%s" "%s"' "$src" "$dest"
+      ;;
+    windows)
+      local win_src win_dest
+      win_src="$(to_windows_path "$src")"
+      win_dest="$(to_windows_path "$dest")"
+      printf "powershell.exe -NoProfile -Command \"New-Item -ItemType SymbolicLink -Path '%s' -Target '%s'\"" \
+        "$win_dest" "$win_src"
+      ;;
+    *)
+      printf 'ERROR: unsupported OS for linking: %s' "$os"
+      ;;
+  esac
+}
+
 main() {
   print_usage
 }

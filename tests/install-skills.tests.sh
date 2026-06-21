@@ -142,6 +142,30 @@ test_read_manifest_skills_missing_file() {
   assert_eq "1" "$rc" "missing manifest returns non-zero"
 }
 
+test_link_command_string_unix() {
+  local out
+  out="$(link_command_string "linux" "/repo/skills/tdd" "/home/u/.agents/skills/tdd")"
+  assert_eq 'ln -s "/repo/skills/tdd" "/home/u/.agents/skills/tdd"' "$out" \
+    "linux link command is a plain ln -s"
+}
+
+test_link_command_string_windows() {
+  if ! command -v cygpath >/dev/null 2>&1; then
+    skip "cygpath not available; skipping windows command-string test"
+    return
+  fi
+  local src dest out win_src win_dest
+  src="$HOME/.agents/skills/tdd"
+  dest="$HOME/.claude/skills/tdd"
+  win_src="$(to_windows_path "$src")"
+  win_dest="$(to_windows_path "$dest")"
+  out="$(link_command_string "windows" "$src" "$dest")"
+  assert_contains "$out" "powershell.exe -NoProfile -Command" "uses powershell.exe -NoProfile"
+  assert_contains "$out" "New-Item -ItemType SymbolicLink" "creates a SymbolicLink"
+  assert_contains "$out" "-Path '$win_dest'" "target path is the cygpath-converted dest"
+  assert_contains "$out" "-Target '$win_src'" "link target is the cygpath-converted src"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"
