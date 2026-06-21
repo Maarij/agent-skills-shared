@@ -1,76 +1,74 @@
 # Installation
 
-Run these commands from `C:\Git\agent-skills-shared`.
+Run from the repository root (referred to below as `<repo>`).
 
-## 1. Verify the managed skill list
+## 1. Prerequisites
 
-Review `skills.manifest.json`. The installers only manage skills listed there.
+- **macOS / Linux:** `bash`. `jq` optional (recommended).
+- **Windows:** **Git Bash** (provides `bash`, `cygpath`, and the bundled
+  `powershell.exe`) and **Developer Mode** enabled (Settings → For developers) so
+  symlinks can be created. Do **not** run from WSL — links made under `/mnt/c` are not
+  reliably followed by Windows-native apps, and the installer hard-stops if it detects
+  WSL.
 
-## 2. Install Codex/shared runtime entries
+## 2. Verify the managed skill list
 
-Dry run:
+Review `skills.manifest.json`. The installer only manages skills listed there.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-codex-skills.ps1 -DryRun
+## 3. Preview, then install
+
+Dry run (changes nothing; prints the exact per-OS action for each skill):
+
+```bash
+./scripts/install-skills.sh --dry-run
 ```
 
 Apply:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-codex-skills.ps1
+```bash
+./scripts/install-skills.sh
 ```
 
-This creates junctions:
+The script runs two ordered passes and creates symlinks:
 
 ```text
-~\.agents\skills\<skill-name>
-  -> C:\Git\agent-skills-shared\skills\<skill-name>
+~/.agents/skills/<skill-name>  ->  <repo>/skills/<skill-name>     (shared/Codex)
+~/.claude/skills/<skill-name>  ->  ~/.agents/skills/<skill-name>  (Claude)
 ```
 
-## 3. Install Claude entries
-
-Dry run:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-claude-skills.ps1 -DryRun
-```
-
-Apply:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-claude-skills.ps1
-```
-
-This creates junctions:
-
-```text
-~\.claude\skills\<skill-name>
-  -> ~\.agents\skills\<skill-name>
-```
-
-Run the Codex/shared install first. The Claude installer expects the shared runtime entries to exist.
+Because the links point back at the repo, editing a skill needs no re-run — only
+adding, removing, or renaming a skill requires re-running the installer.
 
 ## Replacing existing real directories
 
-If an existing managed skill is a real directory instead of a junction, the installer stops unless `-Force` is supplied.
-
-With `-Force`, the installer moves the existing directory to a timestamped backup beside it, then creates the junction. Example:
+If a managed skill path is a real directory (not the expected symlink), the installer
+stops unless `--force` is supplied. With `--force` it moves the existing entry to a
+timestamped backup beside it, then creates the symlink. Example:
 
 ```text
-~\.claude\skills\prd.backup.20260617143000
+~/.claude/skills/prd.backup.20260621143000
 ```
 
-Review dry-run output before using `-Force`.
+Review dry-run output before using `--force`.
 
 ## Verification
 
 After installing, restart the CLI that should discover the skills.
 
-Useful checks:
+macOS / Linux:
 
-```powershell
-Get-Item ~\.agents\skills\prd | Select-Object LinkType,Target
-Get-Item ~\.claude\skills\prd | Select-Object LinkType,Target
+```bash
+readlink ~/.agents/skills/prd
+readlink ~/.claude/skills/prd
 ```
 
-Claude slash-style invocation such as `/prd {text}` depends on the skill directory name under `~\.claude\skills`. The Claude installer preserves that by creating a `prd` junction at that path.
+Windows (PowerShell):
+
+```powershell
+Get-Item ~/.agents/skills/prd | Select-Object LinkType,Target
+Get-Item ~/.claude/skills/prd | Select-Object LinkType,Target
+```
+
+Claude slash-style invocation such as `/prd {text}` depends on the skill directory
+name under `~/.claude/skills`. The installer preserves that by creating a `prd`
+symlink at that path.

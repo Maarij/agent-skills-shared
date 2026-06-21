@@ -11,8 +11,7 @@ skills/
     ...
 skills.manifest.json
 scripts/
-  install-codex-skills.ps1
-  install-claude-skills.ps1
+  install-skills.sh
 docs/
   installation.md
   provider-adapters.md
@@ -29,13 +28,19 @@ prd-workflow-starter/
 
 From this repo:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-codex-skills.ps1 -DryRun
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-codex-skills.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-claude-skills.ps1 -DryRun
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-claude-skills.ps1
+```bash
+./scripts/install-skills.sh --dry-run   # preview
+./scripts/install-skills.sh             # apply
 ```
 
-Use `-Force` only after reviewing the dry run. `-Force` backs up an existing real directory before replacing it with a junction.
+The script builds both layers in one run: `~/.agents/skills/<name>` (shared/Codex)
+then `~/.claude/skills/<name>` (Claude), each a symlink back toward
+`<repo>/skills/<name>`. Use `--force` only after reviewing the dry run; it backs up
+an existing entry to `<dest>.backup.<timestamp>` before replacing it.
+
+**Prerequisites:** On Windows, run from **Git Bash** (provides `bash`, `cygpath`, and
+the bundled `powershell.exe`) with **Developer Mode** enabled (Settings → For
+developers) so symlinks can be created; do **not** run from WSL. `jq` is optional but
+recommended. macOS/Linux need only `bash`.
 
 See [docs/installation.md](docs/installation.md) for the full flow.
