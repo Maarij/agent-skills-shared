@@ -32,6 +32,30 @@ detect_os() {
   esac
 }
 
+parse_manifest_names_jq() {
+  jq -r '.skills[].name' "$1"
+}
+
+parse_manifest_names_fallback() {
+  # Extract each "name": "<value>" occurrence, in file order.
+  grep -oE '"name"[[:space:]]*:[[:space:]]*"[^"]+"' "$1" \
+    | sed -E 's/.*"name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/'
+}
+
+read_manifest_skills() {
+  local manifest="$1"
+  if [[ ! -f "$manifest" ]]; then
+    echo "ERROR: missing manifest: $manifest" >&2
+    return 1
+  fi
+  if command -v jq >/dev/null 2>&1; then
+    parse_manifest_names_jq "$manifest"
+  else
+    echo "Warning: jq not found; using grep/sed fallback. Installing jq is recommended." >&2
+    parse_manifest_names_fallback "$manifest"
+  fi
+}
+
 main() {
   print_usage
 }

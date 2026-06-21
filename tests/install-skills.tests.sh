@@ -57,6 +57,21 @@ skip() { # message
   echo "SKIP: $1"
 }
 
+# Helper: write a small manifest fixture into a sandbox and echo its path.
+_write_manifest() {
+  local dir="$1"
+  cat > "$dir/skills.manifest.json" <<'EOF'
+{
+  "skills": [
+    { "name": "caveman" },
+    { "name": "design-an-interface" },
+    { "name": "tdd" }
+  ]
+}
+EOF
+  printf '%s' "$dir/skills.manifest.json"
+}
+
 # host_os -> the OS token for the machine running the tests (gates link-creating tests).
 host_os() { detect_os "$(uname -s)" ""; }
 
@@ -83,6 +98,47 @@ test_detect_os() {
   assert_eq "wsl"     "$(detect_os "Linux" "Linux ... Microsoft ... WSL2")" "Linux + microsoft -> wsl"
   assert_eq "wsl"     "$(detect_os "Linux" "...microsoft-standard-WSL2...")" "lowercase microsoft -> wsl"
   assert_eq "unknown" "$(detect_os "SunOS" "")"                "unrecognized -> unknown"
+}
+
+test_parse_manifest_fallback() {
+  local sb manifest out
+  sb="$(new_sandbox)"
+  manifest="$(_write_manifest "$sb")"
+  out="$(parse_manifest_names_fallback "$manifest")"
+  assert_eq "caveman
+design-an-interface
+tdd" "$out" "fallback parser extracts names in order"
+}
+
+test_parse_manifest_jq() {
+  if ! command -v jq >/dev/null 2>&1; then
+    skip "jq not installed; skipping jq parser test"
+    return
+  fi
+  local sb manifest out
+  sb="$(new_sandbox)"
+  manifest="$(_write_manifest "$sb")"
+  out="$(parse_manifest_names_jq "$manifest")"
+  assert_eq "caveman
+design-an-interface
+tdd" "$out" "jq parser extracts names in order"
+}
+
+test_read_manifest_skills_happy() {
+  local sb manifest out
+  sb="$(new_sandbox)"
+  manifest="$(_write_manifest "$sb")"
+  out="$(read_manifest_skills "$manifest" 2>/dev/null)"
+  assert_contains "$out" "caveman" "read_manifest_skills returns caveman"
+  assert_contains "$out" "tdd" "read_manifest_skills returns tdd"
+}
+
+test_read_manifest_skills_missing_file() {
+  local sb rc
+  sb="$(new_sandbox)"
+  read_manifest_skills "$sb/nope.json" >/dev/null 2>&1
+  rc=$?
+  assert_eq "1" "$rc" "missing manifest returns non-zero"
 }
 
 # ----- runner (auto-discovers test_* functions) -----
