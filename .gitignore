@@ -1,0 +1,2 @@
+# MSYS/Cygwin crash dumps (e.g. produced by Git Bash)
+*.stackdump
