@@ -33,7 +33,7 @@ detect_os() {
 }
 
 parse_manifest_names_jq() {
-  jq -r '.skills[].name' "$1"
+  jq -r '.skills[].name' "$1" | tr -d '\r'
 }
 
 parse_manifest_names_fallback() {
