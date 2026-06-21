@@ -200,6 +200,89 @@ test_is_link_to_plain_dir_is_false() {
   assert_eq "1" "$?" "is_link_to false for a plain directory"
 }
 
+test_ensure_link_dryrun_creates_nothing() {
+  local sb out
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/skills/tdd"
+  OS="$(host_os)" DRY_RUN=1 FORCE=0
+  out="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd")"
+  assert_contains "$out" "Would create skills root $sb/home/.agents/skills" "dry-run announces parent creation"
+  assert_contains "$out" "Would link tdd -> $sb/repo/skills/tdd" "dry-run announces the link"
+  assert_contains "$out" "via:" "dry-run prints the exact command"
+  if [[ -e "$sb/home/.agents/skills/tdd" || -L "$sb/home/.agents/skills/tdd" ]]; then
+    FAIL=$((FAIL + 1)); echo "FAIL: dry-run must not create the dest"
+  else
+    PASS=$((PASS + 1))
+  fi
+}
+
+test_ensure_link_missing_source_dryrun() {
+  local sb out
+  sb="$(new_sandbox)"
+  OS="$(host_os)" DRY_RUN=1 FORCE=0
+  out="$(ensure_link "tdd" "$sb/home/.agents/skills/tdd" "$sb/home/.claude/skills/tdd")"
+  assert_contains "$out" "source created by an earlier pass" "dry-run tolerates a source from an earlier pass"
+}
+
+test_ensure_link_refuses_existing_dir() {
+  local sb rc err
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/skills/tdd"
+  mkdir -p "$sb/home/.agents/skills/tdd"   # a real directory squatting on the dest
+  OS="$(host_os)" DRY_RUN=0 FORCE=0
+  err="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd" 2>&1)"
+  rc=$?
+  assert_eq "1" "$rc" "refuses without --force"
+  assert_contains "$err" "refusing to replace existing" "prints the refusal message"
+}
+
+test_ensure_link_force_dryrun_announces_backup() {
+  local sb out
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/skills/tdd"
+  mkdir -p "$sb/home/.agents/skills/tdd"
+  OS="$(host_os)" DRY_RUN=1 FORCE=1
+  out="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd")"
+  assert_contains "$out" "Would move existing $sb/home/.agents/skills/tdd to $sb/home/.agents/skills/tdd.backup." \
+    "force dry-run announces a timestamped backup"
+  assert_contains "$out" "Would link tdd ->" "force dry-run announces the link"
+}
+
+test_ensure_link_real_and_idempotent_unix() {
+  if [[ "$(host_os)" == "windows" ]]; then
+    skip "real link creation verified manually on windows (Task 10)"
+    return
+  fi
+  local sb out1 out2
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/skills/tdd"
+  OS="$(host_os)" DRY_RUN=0 FORCE=0
+  out1="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd")"
+  assert_contains "$out1" "Linked tdd ->" "first run links"
+  assert_eq "$sb/repo/skills/tdd" "$(readlink "$sb/home/.agents/skills/tdd")" "link points at the source"
+  out2="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd")"
+  assert_contains "$out2" "Already linked tdd ->" "second run is idempotent"
+}
+
+test_ensure_link_force_backup_real_unix() {
+  if [[ "$(host_os)" == "windows" ]]; then
+    skip "force backup verified manually on windows (Task 10)"
+    return
+  fi
+  local sb out
+  sb="$(new_sandbox)"
+  mkdir -p "$sb/repo/skills/tdd"
+  mkdir -p "$sb/home/.agents/skills/tdd"
+  echo "marker" > "$sb/home/.agents/skills/tdd/old.txt"
+  OS="$(host_os)" DRY_RUN=0 FORCE=1
+  out="$(ensure_link "tdd" "$sb/repo/skills/tdd" "$sb/home/.agents/skills/tdd")"
+  assert_contains "$out" "Backed up tdd to" "announces the backup"
+  assert_eq "$sb/repo/skills/tdd" "$(readlink "$sb/home/.agents/skills/tdd")" "dest is now a link to the source"
+  local backup_count
+  backup_count="$(find "$sb/home/.agents/skills" -maxdepth 1 -name 'tdd.backup.*' -type d | wc -l | tr -d ' ')"
+  assert_eq "1" "$backup_count" "exactly one backup directory was created"
+}
+
 # ----- runner (auto-discovers test_* functions) -----
 for t in $(declare -F | awk '{print $3}' | grep '^test_' | sort); do
   "$t"

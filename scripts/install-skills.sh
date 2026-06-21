@@ -122,6 +122,59 @@ is_link_to() {
   esac
 }
 
+ensure_link() {
+  local name="$1" src="$2" dest="$3"
+
+  if [[ ! -e "$src" && ! -L "$src" ]]; then
+    if [[ "${DRY_RUN:-0}" == "1" ]]; then
+      echo "Would link $name -> $src (source created by an earlier pass)"
+      return 0
+    fi
+    echo "ERROR: missing source for $name: $src" >&2
+    return 1
+  fi
+
+  if is_link_to "${OS}" "$dest" "$src"; then
+    echo "Already linked $name -> $src"
+    return 0
+  fi
+
+  if [[ -e "$dest" || -L "$dest" ]]; then
+    if [[ "${FORCE:-0}" != "1" ]]; then
+      echo "ERROR: refusing to replace existing $dest. Re-run with --force after verifying it should be managed." >&2
+      return 1
+    fi
+    local backup="$dest.backup.$(date +%Y%m%d%H%M%S)"
+    if [[ "${DRY_RUN:-0}" == "1" ]]; then
+      echo "Would move existing $dest to $backup"
+      echo "Would link $name -> $src"
+      echo "  via: $(link_command_string "${OS}" "$src" "$dest")"
+      return 0
+    fi
+    mv "$dest" "$backup"
+    echo "Backed up $name to $backup"
+  fi
+
+  local parent
+  parent="$(dirname "$dest")"
+  if [[ ! -d "$parent" ]]; then
+    if [[ "${DRY_RUN:-0}" == "1" ]]; then
+      echo "Would create skills root $parent"
+    else
+      mkdir -p "$parent"
+    fi
+  fi
+
+  if [[ "${DRY_RUN:-0}" == "1" ]]; then
+    echo "Would link $name -> $src"
+    echo "  via: $(link_command_string "${OS}" "$src" "$dest")"
+    return 0
+  fi
+
+  make_link "${OS}" "$src" "$dest" || return 1
+  echo "Linked $name -> $src"
+}
+
 main() {
   print_usage
 }
