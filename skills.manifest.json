@@ -1,5 +1,6 @@
 {
   "skills": [
+    { "name": "blue-pencil" },
     { "name": "caveman" },
     { "name": "design-an-interface" },
     { "name": "diagnose" },
