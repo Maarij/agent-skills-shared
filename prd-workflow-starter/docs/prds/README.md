@@ -2,7 +2,13 @@
 
 Short, task-sized planning artifacts — one PRD ≈ one feature ≈ one focused PR.
 
-**Status:** 0 shipped · 0 planned · 0 deferred · 0 cancelled · next up is **[PRD 01](planned/feature/01-your-first-prd.md)**.
+**Status:** 0 shipped · 0 planned · 0 deferred · 0 cancelled.
+
+**Next up:** [PRD 01](planned/feature/01-your-first-prd.md), your first PRD.
+
+Backlog events (insertions, reorderings, cancellations, grillings) are logged in [reference/backlog-log.md](reference/backlog-log.md).
+
+<!-- Keep this header a fixed-shape dashboard. Add a **Last shipped:** line once the first PRD ships and a **Launched** line once the project goes live. Dated narrative goes in reference/backlog-log.md, never here. -->
 
 ## Type tags
 
@@ -21,14 +27,14 @@ docs/prds/
 ├── deferred/    bug/  feature/  research/  techdebt/
 ├── cancelled/   bug/  feature/  research/  techdebt/
 ├── shipped/     bug/  feature/  research/  techdebt/
-└── reference/   (non-PRD planning notes, e.g. sequencing questions — no type subfolders)
+└── reference/   (backlog-log.md, the dated event log, plus other non-PRD planning notes; no type subfolders)
 ```
 
 The full status/type skeleton ships with the starter, so every lifecycle folder exists from day one. Each empty leaf holds a `.gitkeep` placeholder (git won't track an empty directory otherwise); drop it once the folder gets its first real PRD, or leave it — it's harmless.
 
 ## Planned (0)
 
-Implement in table order — numbers are stable identifiers, not implementation order. Each PRD assumes the ones above it in this table have landed. Ordering rationale is folded into each summary where it matters; when a coherence pass reorders the table, date the rationale in a preamble above it.
+Implement in table order — numbers are stable identifiers, not implementation order. Each PRD assumes the ones above it in this table have landed. Ordering rationale is folded into each summary where it matters; when a coherence pass reorders the table, log the dated rationale in [reference/backlog-log.md](reference/backlog-log.md), never in this README's header.
 
 | # | Type | PRD | Summary |
 |---|---|---|---|
@@ -54,7 +60,7 @@ Most recent at the bottom of each type group.
 | # | Type | PRD | Summary |
 |---|---|---|---|
 
-**Notes:** When one PRD is absorbed into another, the absorbed PRD keeps its row (with an "Absorbed into #N" note) and is counted in the section header — absorption does not skew the count. When you ship a PRD, bump both the top-line **Status** count and the section header in the same edit.
+**Notes:** When one PRD is absorbed into another, the absorbed PRD keeps its row (with an "Absorbed into #N" note) and is counted in the section header — absorption does not skew the count. When you ship a PRD, update the header dashboard (the top-line **Status** counts and the **Last shipped** / **Next up** lines) and the section header in the same edit.
 
 ## Filename convention
 
@@ -85,6 +91,7 @@ Research PRDs may replace the Functional Requirements section with a "Candidate 
 5. For a PRD with non-trivial UI, create a `designs/prdNN/` folder with a self-contained HTML mockup and link it from the **UI/UX Mockups** section.
 6. If your PRD references another, link it by relative path.
 7. Add a row to the **Planned** table in this README so the index stays current.
+8. If the insertion carries a sequencing decision or notable provenance (a grilling that changed scope, a reordering, a supersession), append a dated `### YYYY-MM-DD: title` entry to [reference/backlog-log.md](reference/backlog-log.md). Never add that narrative to the header of this README.
 
 Before implementing, run a grilling pass (`/grill-me` or `/grill-with-docs`) to resolve the Open Questions — move answers into a dated **Resolved Questions** section; decisions that set project direction become ADRs in `docs/adr/`.
 
@@ -95,7 +102,7 @@ When a PRD ships:
 1. Add `> **Status: Shipped**` after the `> **Type:** X` line.
 2. Move the file from `planned/<type>/` into `shipped/<type>/`.
 3. Move its row from the **Planned** table to the **Shipped** table in this README, updating the link path to `shipped/<type>/NN-slug.md`.
-4. Update the top-line **Status** counts and the next-up pointer in the same edit.
+4. Update the header dashboard in the same edit: the **Status** counts, the **Last shipped** line, and the **Next up** line.
 
 ## Deferring a PRD
 
@@ -105,6 +112,8 @@ When a planned PRD is **still valid** but no longer competes on priority (no use
 2. Move the file from `planned/<type>/` into `deferred/<type>/`.
 3. Move its row from the **Planned** table to the **Deferred** table, updating the link path.
 4. Decrement the **Planned** count and bump the **Deferred** count in the top-line **Status**.
+
+The long form of the dated rationale belongs in [reference/backlog-log.md](reference/backlog-log.md); the PRD file and its table row carry the short form.
 
 A deferred PRD can return to Planned later — reverse the steps above.
 
@@ -116,5 +125,7 @@ When a planned PRD's **premise no longer holds** — the problem it set out to s
 2. Move the file from `planned/<type>/` into `cancelled/<type>/`.
 3. Move its row from the **Planned** table to the **Cancelled** table, updating the link path.
 4. Decrement the **Planned** count and bump the **Cancelled** count in the top-line **Status**.
+
+The long form of the dated rationale belongs in [reference/backlog-log.md](reference/backlog-log.md); the PRD file and its table row carry the short form.
 
 Unlike a deferred PRD, a cancelled one is not expected to return — if the problem resurfaces, write a fresh PRD that references this one for the history.
