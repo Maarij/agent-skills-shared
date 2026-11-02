@@ -24,7 +24,7 @@ Installed as a symlink to the canonical source.
 ~/.claude/skills/<skill-name>
 ```
 
-Installed as a symlink to the Codex/shared runtime path. This preserves Claude skill-name invocation such as `/prd {text}` while keeping one canonical skill source.
+Installed as a symlink to the Codex/shared runtime path. This preserves Claude skill-name invocation such as `/tdd {text}` while keeping one canonical skill source.
 
 ## Project-local skills
 

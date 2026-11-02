@@ -49,7 +49,7 @@ stops unless `--force` is supplied. With `--force` it moves the existing entry t
 timestamped backup beside it, then creates the symlink. Example:
 
 ```text
-~/.claude/skills/prd.backup.20260621143000
+~/.claude/skills/tdd.backup.20260621143000
 ```
 
 Review dry-run output before using `--force`.
@@ -61,17 +61,17 @@ After installing, restart the CLI that should discover the skills.
 macOS / Linux:
 
 ```bash
-readlink ~/.agents/skills/prd
-readlink ~/.claude/skills/prd
+readlink ~/.agents/skills/tdd
+readlink ~/.claude/skills/tdd
 ```
 
 Windows (PowerShell):
 
 ```powershell
-Get-Item ~/.agents/skills/prd | Select-Object LinkType,Target
-Get-Item ~/.claude/skills/prd | Select-Object LinkType,Target
+Get-Item ~/.agents/skills/tdd | Select-Object LinkType,Target
+Get-Item ~/.claude/skills/tdd | Select-Object LinkType,Target
 ```
 
-Claude slash-style invocation such as `/prd {text}` depends on the skill directory
-name under `~/.claude/skills`. The installer preserves that by creating a `prd`
+Claude slash-style invocation such as `/tdd {text}` depends on the skill directory
+name under `~/.claude/skills`. The installer preserves that by creating a `tdd`
 symlink at that path.
