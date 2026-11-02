@@ -15,14 +15,11 @@ scripts/
 docs/
   installation.md
   provider-adapters.md
-prd-workflow-starter/
 ```
 
 `skills/` is the source of truth. Provider-specific skill locations are installed from this repo and should be treated as generated runtime entrypoints.
 
 `skills.manifest.json` is the managed-skill list. The install script only touches names listed there.
-
-`prd-workflow-starter/` is retained as a reusable project scaffold and is not part of the skill installer.
 
 ## Install (new setup)
 
